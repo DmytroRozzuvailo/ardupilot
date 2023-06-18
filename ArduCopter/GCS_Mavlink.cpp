@@ -4,6 +4,13 @@
 #include <AP_RPM/AP_RPM_config.h>
 #include <AP_EFI/AP_EFI_config.h>
 
+static unsigned targetX{0};
+static unsigned targetY{0};
+static unsigned targetWidth{0};
+static unsigned targetHeight{0};
+static unsigned targetMaxX{0};
+static unsigned targetMaxY{0};
+
 MAV_TYPE GCS_Copter::frame_type() const
 {
     /*
@@ -1028,6 +1035,51 @@ MAV_RESULT GCS_MAVLINK_Copter::handle_command_long_packet(const mavlink_command_
         GCS_MAVLINK_Copter::convert_COMMAND_LONG_to_COMMAND_INT(packet, packet_int);
         return handle_command_pause_continue(packet_int);
     }
+
+    case MAV_CMD_USER_1: {
+        send_text(MAV_SEVERITY_INFO, "Command MAV_CMD_USER_1 (Target %f) is Accepted!", packet.param1);
+        if (packet.param1 == 1.0) {
+            send_text(
+                MAV_SEVERITY_INFO,
+                "Follow: x=%f, y=%f, width=%f, heigh=%f, maxX=%f, maxY=%f",
+                packet.param2,
+                packet.param3,
+                packet.param4,
+                packet.param5,
+                packet.param6,
+                packet.param7);
+            targetX = packet.param2;
+            targetY = packet.param3;
+            targetWidth = packet.param4;
+            targetHeight = packet.param5;
+            targetMaxX = packet.param6;
+            targetMaxY = packet.param7;
+
+        } else if (packet.param1 == 2.0) {
+            send_text(MAV_SEVERITY_INFO, "Send Command MAV_CMD_USER_1 for target area draw!");
+            int rangeX = targetMaxX - targetWidth + 1;
+            int rangeY = targetMaxY - targetHeight + 1;
+            int numX = std::rand() % rangeX;
+            int numY = std::rand() % rangeY;
+            send_text(MAV_SEVERITY_INFO, "SEND MAV_CMD_USER_1 x: %d, y: %d", numX, numY);
+            mavlink_msg_command_long_send(
+                chan,
+                1,
+                1,
+                MAV_CMD_USER_1,
+                0,
+                packet.param1,
+                numX,
+                numY,
+                targetWidth,
+                targetHeight,
+                targetMaxX,
+                targetMaxY);
+        }
+        // TODO: forward this message to Companion Computer
+        return MAV_RESULT_ACCEPTED;
+    }
+    
     default:
         return GCS_MAVLINK::handle_command_long_packet(packet);
     }

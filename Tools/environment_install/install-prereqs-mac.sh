@@ -48,15 +48,15 @@ echo "Homebrew installed"
 
 #install command line tools
 echo "Checking CLI Tools installed..."
-{
-    ERROR=$(xcode-select --install 2>&1 > /dev/null)
-} ||
-{
-if [[ $ERROR != *"command line tools are already installed"* ]]; then
-    echo "$ERROR" 1>&2
-    exit 1
-fi
-}
+# {
+#     ERROR=$(xcode-select --install 2>&1 > /dev/null)
+# } ||
+# {
+# if [[ $ERROR != *"command line tools are already installed"* ]]; then
+#     echo "$ERROR" 1>&2
+#     exit 1
+# fi
+# }
 
 # ArduPilot official Toolchain for STM32 boards
 function install_arm_none_eabi_toolchain() {
@@ -101,7 +101,7 @@ function maybe_prompt_user() {
 # auto-updates things when you install other packages which depend on
 # more recent versions.
 # see https://github.com/orgs/Homebrew/discussions/3895
-find /usr/local/bin -lname '*/Library/Frameworks/Python.framework/*' -delete
+# find /usr/local/bin -lname '*/Library/Frameworks/Python.framework/*' -deleteß
 
 brew update
 brew install gawk curl coreutils wget
